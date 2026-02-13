@@ -1,49 +1,156 @@
-Project Overview
+# 🎭 Real-Time Face Blur using MediaPipe & OpenCV
 
-This project implements a real-time face anonymization system using OpenCV and MediaPipe. The system detects faces from a live webcam feed and applies Gaussian blur to anonymize them, while displaying the real-time FPS.
-It is designed as a privacy-preserving demonstration, showing hands-on skills in computer vision, real-time video processing, and MediaPipe Tasks API.
+A real-time face detection and face blurring system built using MediaPipe Tasks Vision API and OpenCV.  
+The application captures live webcam feed, detects faces using a pre-trained BlazeFace model, and applies Gaussian blur dynamically while displaying live FPS on the screen.
 
-Features:
+---
 
-Real-Time Face Detection: Uses MediaPipe BlazeFace for high-performance face detection.
-Adaptive Face Anonymization: Gaussian blur kernel scales based on face size for better anonymization.
-FPS Overlay: Displays real-time frames per second for performance monitoring.
-Robust Processing: Safe handling of bounding boxes near frame edges.
-Lightweight and CPU-Friendly: Runs smoothly on a standard CPU webcam feed (~24–25 FPS).
+## 🚀 Features
 
-Tech Stack
+- Real-time face detection
+- Automatic face blurring using Gaussian Blur
+- Dynamic blur intensity based on face size
+- Live FPS counter overlay
+- Asynchronous detection using LIVE_STREAM mode
+- Safe bounding box handling (prevents frame overflow)
+- Press `q` to exit safely
 
-Python 3.x
-OpenCV – for image processing, Gaussian blur, and webcam capture.
-MediaPipe Tasks API – BlazeFace face detection with asynchronous live stream processing.
-NumPy – for array manipulation and frame handling.
+---
 
-How It Works
+## 🧠 Project Overview
 
-Webcam captures frames in BGR format.
-Frames are converted to RGB and wrapped in mp.Image.
-BlazeFace detects faces asynchronously in LIVE_STREAM mode.
-Detected faces’ bounding boxes are extracted and blurred using adaptive Gaussian blur.
+This project demonstrates real-time computer vision using MediaPipe’s modern Tasks API.
 
-Installation:
-# Clone the repo
-git clone https://github.com/<your-username>/face-anonymization.git
-cd face-anonymization
+### Detection Pipeline
 
-# Install dependencies
+1. Webcam captures frame using OpenCV.
+2. Frame is converted from BGR → RGB.
+3. Frame is wrapped into MediaPipe Image format.
+4. `detect_async()` sends frame with timestamp.
+5. MediaPipe processes frame in LIVE_STREAM mode.
+6. Callback function receives detection results.
+7. Faces are blurred and displayed with FPS overlay.
+
+---
+
+## 🔎 Model Used
+
+**BlazeFace Short Range (TFLite)**
+
+- File: `blaze_face_short_range.tflite`
+- Optimized for fast real-time face detection
+- Lightweight and CPU-friendly
+- Designed for short-range webcam use
+
+Loaded using:
+
+BaseOptions(model_asset_path=MODEL_PATH)
+
+---
+
+## ⚙️ LIVE_STREAM Mode
+
+The detector runs in:
+
+VisionRunningMode.LIVE_STREAM
+
+This mode:
+
+- Requires timestamps for each frame
+- Runs asynchronously
+- Uses a callback function (`result_callback`)
+- Ideal for real-time video processing
+
+---
+
+## 🖼️ Face Blurring Logic
+
+For each detected face:
+
+face = input_array[y:y+h, x:x+w]  
+k = max(15, (w+h)//20*2 + 1)  
+face = cv2.GaussianBlur(face, (k, k), 0)
+
+Why dynamic kernel size?
+
+- Larger face → stronger blur
+- Smaller face → lighter blur
+- OpenCV requires odd kernel size for GaussianBlur
+
+Bounding box is clipped to frame dimensions to avoid index errors.
+
+---
+
+## 🎯 FPS Calculation
+
+FPS is computed every 1 second for stable measurement:
+
+if current_time - prev_time >= 1.0:  
+&nbsp;&nbsp;&nbsp;&nbsp;fps = frame_count / (current_time - prev_time)
+
+Displayed using `cv2.putText()`.
+
+---
+
+## 📦 Requirements
+
+Install dependencies:
+
 pip install opencv-python mediapipe numpy
 
-Note: You need the MediaPipe BlazeFace TFLite model (blaze_face_short_range.tflite) in the project directory.
+---
 
-Usage :
-python face_anonymizer.py
+## 📁 Project Structure
 
-The webcam window will open with faces blurred in real-time.
-Press q to stop the application.
+face-blur-project/  
+│  
+├── face_detection.py  
+├── blaze_face_short_range.tflite  
+└── README.md  
 
+---
 
+## ▶️ How to Run
 
+python face_detection.py  
 
-Real-time FPS is calculated and overlaid on the video.
+Press:
 
-Press q to exit.
+q  →  Quit application
+
+---
+
+## ⚠️ Important Notes
+
+- Webcam must be accessible.
+- Keep the `.tflite` model file in the same directory.
+- Good lighting improves detection accuracy.
+- LIVE_STREAM mode requires proper timestamps.
+
+---
+
+## 🛠 Tech Stack
+
+- Python
+- OpenCV
+- MediaPipe Tasks Vision API
+- NumPy
+
+---
+
+## 💡 Future Improvements
+
+- Face tracking instead of per-frame detection
+- Toggle blur on/off with keyboard
+- Add face recognition
+- Deploy as web app (FastAPI + WebRTC)
+- GPU acceleration
+- Multi-face analytics (counting, logging)
+
+---
+
+## 👩‍💻 Author
+
+Divya  
+BTech | Electronics & Communication Engineering  
+Interested in AI, ML, Deep Learning & Generative AI
